@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { sanitizeFilename } = require('./identifiers');
+const config = require('../config');
 
 const EMPTY_RESULT = { hasMedia: false, mimetype: null, filename: null, mediaPath: null };
 
@@ -29,11 +30,13 @@ class MediaStorage {
 
             fs.writeFileSync(fullPath, Buffer.from(media.data, 'base64'));
 
+            const relativePath = path.relative(config.PROJECT_ROOT, fullPath).split(path.sep).join('/');
+
             return {
                 hasMedia: true,
                 mimetype: media.mimetype || null,
                 filename: media.filename || filename,
-                mediaPath: fullPath,
+                mediaPath: relativePath,
             };
         } catch (err) {
             console.error('No se pudo descargar el multimedia:', err.message);
