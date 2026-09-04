@@ -1,7 +1,7 @@
 const qrcode = require('qrcode-terminal');
 
 const config = require('./src/config');
-const supabase = require('./src/db/SupabaseClient');
+const DuckLake = require('./src/db/DuckLake');
 const MessageRepository = require('./src/db/MessageRepository');
 const ContactResolver = require('./src/wa/ContactResolver');
 const MediaStorage = require('./src/wa/MediaStorage');
@@ -13,12 +13,15 @@ const { handleCommand } = require('./src/wa/commands');
 const READY_DELAY_MS = 5000;
 
 const client = createWhatsAppClient();
+const ducklakeConection = new DuckLake();
 
-const messageRepository = new MessageRepository(supabase);
+const messageRepository = new MessageRepository(ducklakeConection);
 const contactResolver = new ContactResolver(client);
 const mediaStorage = new MediaStorage(config.MEDIA_DIR);
 const messagePipeline = new MessagePipeline({ contactResolver, mediaStorage, messageRepository });
 const historyExtractor = new HistoryExtractor(client, config.HISTORY_LIMIT);
+
+
 
 client.on('qr', (qr) => {
     console.log('Escanea el codigo QR con tu WhatsApp:');
@@ -45,6 +48,7 @@ client.on('ready', async () => {
     await new Promise((resolve) => setTimeout(resolve, READY_DELAY_MS));
 
     await historyExtractor.run((msg, chatInfo) => messagePipeline.process(msg, chatInfo));
+    await ducklakeConection.checkpoint();
 });
 
 client.on('message', async (msg) => {

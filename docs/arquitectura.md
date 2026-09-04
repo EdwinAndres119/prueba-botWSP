@@ -4,7 +4,7 @@
 
 `app.js` conecta los servicios y engancha los eventos del cliente de WhatsApp. Toda la logica vive en `src/`, organizada en dos areas:
 
-- `src/db/` — acceso a la base de datos (Supabase).
+- `src/db/` — acceso a la base de datos (DuckLake, sobre DuckDB).
 - `src/wa/` — todo lo relacionado con WhatsApp: cliente, resolucion de contactos, descarga de multimedia, extraccion de historial y el pipeline que arma cada fila.
 
 ```
@@ -13,8 +13,8 @@ BOT_WSP/
 ├── src/
 │   ├── config.js                # variables de entorno y constantes
 │   ├── db/
-│   │   ├── SupabaseClient.js    # cliente de Supabase
-│   │   └── MessageRepository.js # guarda/actualiza filas en la tabla mensajes
+│   │   ├── DuckLake.js          # conexion e inicializacion de la base DuckLake
+│   │   └── MessageRepository.js # guarda filas en la tabla mensajes
 │   └── wa/
 │       ├── client.js            # crea el Client de whatsapp-web.js
 │       ├── identifiers.js       # limpieza y armado de ids
@@ -28,28 +28,27 @@ BOT_WSP/
     └── arquitectura.md
 ```
 
-## Esquema de la tabla `mensajes` (Supabase)
+## Esquema de la tabla `whatsapp.mensajes` (DuckLake)
 
 | Columna | Tipo | Descripcion |
 |---|---|---|
-| `id` | text (PK) | id del mensaje; evita duplicados via upsert |
-| `chat_id` | text | id del chat, sin sufijo de dominio |
-| `chat_name` | text | nombre del chat (grupo o contacto) |
-| `is_group` | boolean | si el chat es un grupo |
-| `remitente_numero` | text | numero de quien mando el mensaje |
-| `remitente_nombre` | text | nombre del contacto si esta registrado; si no, el numero |
-| `esta_registrado` | boolean | si el numero tiene un contacto real asociado |
-| `body` | text | texto del mensaje (o caption si es multimedia) |
-| `message_type` | text | tipo de mensaje |
-| `from_me` | boolean | si lo mando el dueno de la cuenta |
-| `has_media` | boolean | si tiene imagen/documento/audio adjunto |
-| `media_mimetype` | text | tipo de archivo descargado |
-| `media_filename` | text | nombre original del archivo |
-| `media_path` | text | ruta local donde quedo guardado |
-| `timestamp` | timestamptz | fecha del mensaje |
-| `fetched_at` | timestamptz | fecha en que se guardo |
+| `id` | VARCHAR | id del mensaje |
+| `chat_id` | VARCHAR | id del chat, sin sufijo de dominio |
+| `chat_name` | VARCHAR | nombre del chat (grupo o contacto) |
+| `is_group` | BOOLEAN | si el chat es un grupo |
+| `remitente_numero` | VARCHAR | numero de quien mando el mensaje |
+| `remitente_nombre` | VARCHAR | nombre del contacto si esta registrado; si no, el numero |
+| `esta_registrado` | BOOLEAN | si el numero tiene un contacto real asociado |
+| `body` | VARCHAR | texto del mensaje (o caption si es multimedia) |
+| `message_type` | VARCHAR | tipo de mensaje |
+| `from_me` | BOOLEAN | si lo mando el dueno de la cuenta |
+| `has_media` | BOOLEAN | si tiene imagen/documento/audio adjunto |
+| `media_mimetype` | VARCHAR | tipo de archivo descargado |
+| `media_filename` | VARCHAR | nombre original del archivo |
+| `media_path` | VARCHAR | ruta local donde quedo guardado |
+| `timestamp` | TIMESTAMP | fecha del mensaje |
 
-SQL de creacion en README.md.
+La tabla se crea automaticamente al iniciar el bot (ver `DuckLake.js`), sin necesidad de correr SQL a mano.
 
 ## Decisiones tecnicas
 
@@ -79,4 +78,4 @@ Para un uso recurrente o de mayor volumen, evaluar la API oficial de WhatsApp Bu
 
 ## Pendiente
 
-- Validacion con Zod antes de insertar en Supabase.
+- Validacion con Zod antes de insertar en DuckLake.

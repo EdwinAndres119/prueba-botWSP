@@ -1,16 +1,17 @@
 {
   "name": "bot-wsp",
   "version": "1.0.0",
-  "description": "Extractor de mensajes de WhatsApp con almacenamiento en Supabase",
+  "description": "Extractor de mensajes de WhatsApp con almacenamiento en DuckLake",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
+  
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.115.0",
+    "@duckdb/node-api": "1.5.5-r.4",
     "dotenv": "^17.2.3",
     "pm2": "^6.0.14",
     "qrcode-terminal": "^0.12.0",
