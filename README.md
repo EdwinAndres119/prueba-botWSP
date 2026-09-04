@@ -1,4 +1,4 @@
-# BOT_WSP - Bot de WhatsApp (Soportina)
+# BOT_WSP - Bot de WhatsApp
 
 Bot de WhatsApp automatizado construido con Node.js y whatsapp-web.js que usa Puppeteer para automatizar WhatsApp Web.
 
