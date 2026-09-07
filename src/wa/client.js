@@ -1,3 +1,5 @@
+const path = require('path');
+const fs = require('fs');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 
 // Real desktop Chrome user-agent so WhatsApp does not see an inconsistent
@@ -5,12 +7,20 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const USER_AGENT =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
+function resolveChromePath() {
+    if (!process.pkg) return undefined;
+
+    const bundledPath = path.join(path.dirname(process.execPath), 'chrome-win64', 'chrome.exe');
+    return fs.existsSync(bundledPath) ? bundledPath : undefined;
+}
+
 function createWhatsAppClient() {
     return new Client({
         authStrategy: new LocalAuth(),
         userAgent: USER_AGENT,
         puppeteer: {
-            headless: false,
+            headless: true,
+            executablePath: resolveChromePath(),
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         },
     });

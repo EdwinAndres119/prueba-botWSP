@@ -11,6 +11,8 @@ const createWhatsAppClient = require('./src/wa/client');
 const { handleCommand } = require('./src/wa/commands');
 
 const READY_DELAY_MS = 5000;
+const INIT_MAX_ATTEMPTS = 3;
+const INIT_RETRY_DELAY_MS = 3000;
 
 const client = createWhatsAppClient();
 
@@ -54,5 +56,27 @@ client.on('message', async (msg) => {
     await handleCommand(msg);
 });
 
+async function initializeWithRetry() {
+    for (let attempt = 1; attempt <= INIT_MAX_ATTEMPTS; attempt++) {
+        try {
+            await client.initialize();
+            return;
+        } catch (err) {
+            const isContextRace = err.message && err.message.includes('Execution context was destroyed');
+            if (!isContextRace || attempt === INIT_MAX_ATTEMPTS) throw err;
+            console.log(`Fallo al inicializar (intento ${attempt}/${INIT_MAX_ATTEMPTS}), reintentando...`);
+            try {
+                await client.destroy();
+            } catch (destroyErr) {
+                console.error('No se pudo cerrar el navegador tras el fallo:', destroyErr.message);
+            }
+            await new Promise((resolve) => setTimeout(resolve, INIT_RETRY_DELAY_MS));
+        }
+    }
+}
+
 console.log('Iniciando cliente de WhatsApp...');
-client.initialize();
+initializeWithRetry().catch((err) => {
+    console.error('No se pudo inicializar el cliente de WhatsApp:', err.message);
+    process.exit(1);
+});

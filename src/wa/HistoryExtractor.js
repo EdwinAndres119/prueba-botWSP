@@ -1,8 +1,9 @@
 const { Message } = require('whatsapp-web.js');
+const config = require('../config');
 
-const CHAT_TIMEOUT_MS = 15000;
 const MIN_DELAY_MS = 1500;
 const DELAY_JITTER_MS = 1500;
+const PAGE_DELAY_MS = 600;
 const PROGRESS_INTERVAL = 10;
 
 function withTimeout(promise, ms) {
@@ -39,30 +40,33 @@ class HistoryExtractor {
 
     // Mirrors Chat.fetchMessages() internally, but fetches the chat with
     // getAsModel: false to avoid the same serialization failure as listChats().
+    // limit <= 0 means no cap: keep paging into history until WhatsApp
+    // reports there are no earlier messages left to load.
     async fetchMessages(chatId) {
         const limit = this.historyLimit;
-        const rawMessages = await this.client.pupPage.evaluate(async (chatId, limit) => {
+        const rawMessages = await this.client.pupPage.evaluate(async (chatId, limit, pageDelayMs) => {
             const isRealMessage = (m) => !m.isNotification;
+            const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
             const chat = await window.WWebJS.getChat(chatId, { getAsModel: false });
             let msgs = chat.msgs.getModelsArray().filter(isRealMessage);
 
-            if (limit > 0) {
-                while (msgs.length < limit) {
-                    const loaded = await window
-                        .require('WAWebChatLoadMessages')
-                        .loadEarlierMsgs({ chat });
-                    if (!loaded || !loaded.length) break;
-                    msgs = [...loaded.filter(isRealMessage), ...msgs];
-                }
-                if (msgs.length > limit) {
-                    msgs.sort((a, b) => (a.t > b.t ? 1 : -1));
-                    msgs = msgs.splice(msgs.length - limit);
-                }
+            while (limit <= 0 || msgs.length < limit) {
+                const loaded = await window
+                    .require('WAWebChatLoadMessages')
+                    .loadEarlierMsgs({ chat });
+                if (!loaded || !loaded.length) break;
+                msgs = [...loaded.filter(isRealMessage), ...msgs];
+                await sleep(pageDelayMs);
+            }
+
+            if (limit > 0 && msgs.length > limit) {
+                msgs.sort((a, b) => (a.t > b.t ? 1 : -1));
+                msgs = msgs.splice(msgs.length - limit);
             }
 
             return msgs.map((m) => window.WWebJS.getMessageModel(m));
-        }, chatId, limit);
+        }, chatId, limit, PAGE_DELAY_MS);
 
         return rawMessages.map((m) => new Message(this.client, m));
     }
@@ -78,7 +82,7 @@ class HistoryExtractor {
         for (const chat of chats) {
             try {
                 const chatInfo = { name: chat.name, isGroup: chat.id.endsWith('@g.us') };
-                const messages = await withTimeout(this.fetchMessages(chat.id), CHAT_TIMEOUT_MS);
+                const messages = await withTimeout(this.fetchMessages(chat.id), config.CHAT_TIMEOUT_MS);
 
                 for (const msg of messages) {
                     await onMessage(msg, chatInfo);
