@@ -1,34 +1,42 @@
 class DuckLake {
-    constructor() {
-        this.connection = this.initializeDatabase();
-    }
+	constructor() {
+		this.connection = this.initializeDatabase();
+	}
 
-    async initializeDatabase() {
-        const db = await this.createDuckDbConnection();
-        await this.initializeDataLake(db);
+	async initializeDatabase() {
+		const db = await this.createDuckDbConnection();
+		await this.initializeDataLake(db);
 
-        return db;
-    }
+		return db;
+	}
 
-    async dbRun(db, sql) {
-        await db.run(sql);
-    }
+	async dbRun(db, sql) {
+		await db.run(sql);
+	}
 
-    async initializeDataLake(db) {
-        await this.dbRun(db, `
+	async initializeDataLake(db) {
+		await this.dbRun(
+			db,
+			`
             INSTALL ducklake;
             LOAD ducklake;
-        `);
+        `,
+		);
 
-        await this.dbRun(db, `
+		await this.dbRun(
+			db,
+			`
             ATTACH
                 'ducklake:./whatsapp.ducklake'
             AS whatsapp
                 (DATA_PATH './whatsapp-data/');
             USE whatsapp;
-        `);
+        `,
+		);
 
-        await this.dbRun(db, `
+		await this.dbRun(
+			db,
+			`
             CREATE TABLE IF NOT EXISTS whatsapp.mensajes (
                 id VARCHAR,
                 chat_id VARCHAR,
@@ -46,27 +54,28 @@ class DuckLake {
                 media_path VARCHAR,
                 timestamp TIMESTAMP
             );
-        `);
-    }
+        `,
+		);
+	}
 
-    async createDuckDbConnection() {
-        const { DuckDBInstance } = await import('@duckdb/node-api');
+	async createDuckDbConnection() {
+		const { DuckDBInstance } = await import("@duckdb/node-api");
 
-        const instance = await DuckDBInstance.create(':memory:');
+		const instance = await DuckDBInstance.create(":memory:");
 
-        return instance.connect();
-    }
+		return instance.connect();
+	}
 
-    async run(sql, params) {
-        const db = await this.connection;
-        return db.run(sql, params);
-    }
+	async run(sql, params) {
+		const db = await this.connection;
+		return db.run(sql, params);
+	}
 
-    async checkpoint() {
-        const db = await this.connection;
-        await db.run(`
+	async checkpoint() {
+		const db = await this.connection;
+		await db.run(`
             CHECKPOINT;`);
-    }
+	}
 }
 
 module.exports = DuckLake;

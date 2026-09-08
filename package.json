@@ -1,32 +1,33 @@
 {
-  "name": "bot-wsp",
-  "version": "1.0.0",
-  "description": "Extractor de mensajes de WhatsApp con almacenamiento en DuckLake",
-  "main": "app.js",
-  "bin": "app.js",
-  "scripts": {
-    "start": "node app.js",
-    "build": "pkg . --targets node22-win-x64 --output dist/BotWSP.exe",
-    "lint": "biome lint --write src app.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "pkg": {
-    "assets": [
-      "node_modules/whatsapp-web.js/src/util/Injected/**/*"
-    ]
-  },
-  "dependencies": {
-    "@duckdb/node-api": "1.5.5-r.4",
-    "dotenv": "^17.2.3",
-    "pino": "^10.3.1",
-    "pm2": "^6.0.14",
-    "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.34.7"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.5.12",
-    "@yao-pkg/pkg": "^6.22.0"
-  }
+	"name": "bot-wsp",
+	"version": "1.0.0",
+	"description": "Extractor de mensajes de WhatsApp con almacenamiento en DuckLake",
+	"main": "app.js",
+	"bin": "app.js",
+	"scripts": {
+		"start": "node app.js",
+		"build": "pkg . --targets node22-win-x64 --output dist/BotWSP.exe",
+		"lint": "biome lint --write src app.js",
+    "format": "biome format --write src app.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"pkg": {
+		"assets": [
+			"node_modules/whatsapp-web.js/src/util/Injected/**/*"
+		]
+	},
+	"dependencies": {
+		"@duckdb/node-api": "1.5.5-r.4",
+		"dotenv": "^17.2.3",
+		"pino": "^10.3.1",
+		"pm2": "^6.0.14",
+		"qrcode-terminal": "^0.12.0",
+		"whatsapp-web.js": "^1.34.7"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.12",
+		"@yao-pkg/pkg": "^6.22.0"
+	}
 }
