@@ -25,6 +25,7 @@ class DuckLake {
                 'ducklake:./whatsapp.ducklake'
             AS whatsapp
                 (DATA_PATH './whatsapp-data/');
+            USE whatsapp;
         `);
 
         await this.dbRun(db, `
@@ -63,7 +64,8 @@ class DuckLake {
 
     async checkpoint() {
         const db = await this.connection;
-        await db.run('CHECKPOINT;');
+        await db.run(`
+            CHECKPOINT;`);
     }
 }
 

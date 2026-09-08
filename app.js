@@ -48,7 +48,9 @@ client.on('ready', async () => {
     await new Promise((resolve) => setTimeout(resolve, READY_DELAY_MS));
 
     await historyExtractor.run((msg, chatInfo) => messagePipeline.process(msg, chatInfo));
+    console.log('Consolidando cambios en DuckLake...');
     await ducklakeConection.checkpoint();
+    console.log('Checkpoint de DuckLake completado.');
 });
 
 client.on('message', async (msg) => {

@@ -1,6 +1,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
 
+whatsapp.ducklake
+whatsapp.ducklake.wal
+CLAUDE.md
+whatsapp-data/
 ### Node ###
 # Logs
 logs
@@ -47,6 +51,7 @@ node_modules/
 jspm_packages/
 .wwebjs_auth/
 .wwebjs_cache/
+media/
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
