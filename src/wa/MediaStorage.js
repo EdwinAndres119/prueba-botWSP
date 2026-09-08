@@ -1,7 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const { sanitizeFilename } = require('./identifiers');
-const config = require('../config');
+import fs from 'node:fs';
+import path from 'node:path';
+
+import config from '../config.js';
+import { sanitizeFilename } from './identifiers.js';
 
 const EMPTY_RESULT = { hasMedia: false, mimetype: null, filename: null, mediaPath: null };
 
@@ -17,7 +18,7 @@ class MediaStorage {
 
         try {
             const media = await msg.downloadMedia();
-            if (!media || !media.data) {
+            if (!media?.data) {
                 return { ...EMPTY_RESULT, hasMedia: true };
             }
 

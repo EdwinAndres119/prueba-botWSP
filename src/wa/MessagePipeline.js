@@ -1,4 +1,4 @@
-const { cleanNumber, buildMessageId } = require('./identifiers');
+import { buildMessageId, cleanNumber } from './identifiers.js';
 
 class MessagePipeline {
     constructor({ contactResolver, mediaStorage, messageRepository }) {
@@ -8,7 +8,7 @@ class MessagePipeline {
     }
 
     async process(msg, chatInfo) {
-        if (!msg.id || !msg.id.id) {
+        if (!msg.id?.id) {
             return; // internal WhatsApp notification without a real message id
         }
 
@@ -47,7 +47,7 @@ class MessagePipeline {
 
         try {
             return await msg.getChat();
-        } catch (err) {
+        } catch (_err) {
             return {};
         }
     }

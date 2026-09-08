@@ -55,7 +55,7 @@ class HistoryExtractor {
                 const loaded = await window
                     .require('WAWebChatLoadMessages')
                     .loadEarlierMsgs({ chat });
-                if (!loaded || !loaded.length) break;
+                if (!loaded?.length) break;
                 msgs = [...loaded.filter(isRealMessage), ...msgs];
                 await sleep(pageDelayMs);
             }

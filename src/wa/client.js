@@ -1,6 +1,7 @@
-const path = require('path');
-const fs = require('fs');
-const { Client, LocalAuth } = require('whatsapp-web.js');
+import fs from 'node:fs';
+import path from 'node:path';
+
+import { Client, LocalAuth } from 'whatsapp-web.js';
 
 // Real desktop Chrome user-agent so WhatsApp does not see an inconsistent
 // browser fingerprint (Puppeteer's default is a common automation signal).

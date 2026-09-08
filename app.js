@@ -1,14 +1,14 @@
-const qrcode = require('qrcode-terminal');
+import qrcode from 'qrcode-terminal';
 
-const config = require('./src/config');
-const DuckLake = require('./src/db/DuckLake');
-const MessageRepository = require('./src/db/MessageRepository');
-const ContactResolver = require('./src/wa/ContactResolver');
-const MediaStorage = require('./src/wa/MediaStorage');
-const MessagePipeline = require('./src/wa/MessagePipeline');
-const HistoryExtractor = require('./src/wa/HistoryExtractor');
-const createWhatsAppClient = require('./src/wa/client');
-const { handleCommand } = require('./src/wa/commands');
+import config from './src/config.js';
+import DuckLake from './src/db/ducklake.js';
+import MessageRepository from './src/db/MessageRepository.js';
+import ContactResolver from './src/wa/ContactResolver.js';
+import createWhatsAppClient from './src/wa/client.js';
+import { handleCommand } from './src/wa/commands.js';
+import HistoryExtractor from './src/wa/HistoryExtractor.js';
+import MediaStorage from './src/wa/MediaStorage.js';
+import MessagePipeline from './src/wa/MessagePipeline.js';
 
 const READY_DELAY_MS = 5000;
 const INIT_MAX_ATTEMPTS = 3;
@@ -79,7 +79,7 @@ async function initializeWithRetry() {
                 console.log('El cliente ya habia quedado listo antes de este error; no se reintenta.');
                 return;
             }
-            const isContextRace = err.message && err.message.includes('Execution context was destroyed');
+            const isContextRace = err.message?.includes('Execution context was destroyed');
             if (!isContextRace || attempt === INIT_MAX_ATTEMPTS) throw err;
             console.log(`Fallo al inicializar (intento ${attempt}/${INIT_MAX_ATTEMPTS}), reintentando...`);
             try {

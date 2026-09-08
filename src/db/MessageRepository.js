@@ -1,7 +1,8 @@
-const path = require('node:path');
-const fs = require('node:fs');
-const { performance } = require('node:perf_hooks');
-const pino = require('pino');
+import fs from 'node:fs';
+import path from 'node:path';
+import { performance } from 'node:perf_hooks';
+
+import pino from 'pino';
 
 const logsDirectory = path.join(__dirname, '../../logs');
 fs.mkdirSync(logsDirectory, { recursive: true });

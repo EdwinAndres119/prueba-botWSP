@@ -1,4 +1,4 @@
-const { cleanNumber } = require('./identifiers');
+import { cleanNumber } from './identifiers.js';
 
 class ContactResolver {
     constructor(client) {
@@ -9,7 +9,7 @@ class ContactResolver {
         const rawId = msg.author || msg.from;
         let number = cleanNumber(rawId);
 
-        if (rawId && rawId.endsWith('@lid')) {
+        if (rawId?.endsWith('@lid')) {
             number = await this._resolvePhoneFromLid(rawId, number);
         }
 
@@ -17,7 +17,7 @@ class ContactResolver {
             const contact = await msg.getContact();
             const name = contact.name || contact.pushname || number;
             return { number, name, isRegistered: Boolean(contact.isMyContact) };
-        } catch (err) {
+        } catch (_err) {
             return { number, name: number, isRegistered: false };
         }
     }
@@ -25,10 +25,10 @@ class ContactResolver {
     async _resolvePhoneFromLid(lid, fallbackNumber) {
         try {
             const [result] = await this.client.getContactLidAndPhone([lid]);
-            if (result && result.pn) {
+            if (result?.pn) {
                 return cleanNumber(result.pn);
             }
-        } catch (err) {
+        } catch (_err) {
             // Keep the lid-based number if resolution fails.
         }
         return fallbackNumber;

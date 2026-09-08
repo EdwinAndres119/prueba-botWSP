@@ -1,5 +1,6 @@
-const path = require('path');
-require('dotenv').config();
+import path from 'node:path';
+
+import 'dotenv/config';
 
 const PROJECT_ROOT = path.join(__dirname, '..');
 const HISTORY_LIMIT = parseInt(process.env.HISTORY_LIMIT || '0', 10);

@@ -18,7 +18,7 @@ function buildMessageId(msgId) {
     if (msgId._serialized) return msgId._serialized;
 
     const participant = serializeIdPart(msgId.participant);
-    return `${msgId.fromMe}_${msgId.remote}_${msgId.id}${participant ? '_' + participant : ''}`;
+    return `${msgId.fromMe}_${msgId.remote}_${msgId.id}${participant ? `_${participant}` : ''}`;
 }
 
 module.exports = { cleanNumber, serializeIdPart, sanitizeFilename, buildMessageId };
