@@ -3,6 +3,7 @@ import DuckLakeClient from "./src/db/DuckLakeClient.js";
 import MessageRepository from "./src/db/MessageRepository.js";
 import ContactResolver from "./src/wa/ContactResolver.js";
 import createWhatsAppClient from "./src/wa/client.js";
+import { handleCommand } from "./src/wa/commands.js";
 import HistoryExtractor from "./src/wa/HistoryExtractor.js";
 import MediaStorage from "./src/wa/MediaStorage.js";
 import MessagePipeline from "./src/wa/MessagePipeline.js";
@@ -23,6 +24,7 @@ const messagePipeline = new MessagePipeline({
 	contactResolver,
 	mediaStorage,
 	messageRepository,
+	commandHandler: handleCommand,
 });
 
 const historyExtractor = new HistoryExtractor(client, config.HISTORY_LIMIT);

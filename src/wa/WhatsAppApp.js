@@ -34,7 +34,7 @@ class WhatsAppApp {
 			this.handleAuthenticated();
 		});
 
-		this.client.on("auth_failure", (msg) => {
+		this.client.on("authfailure", (msg) => {
 			this.handleAuthFailure(msg);
 		});
 
@@ -43,7 +43,9 @@ class WhatsAppApp {
 		});
 
 		this.client.on("ready", () => {
-			this.handleReady();
+			this.handleReady().catch((err) => {
+				console.error("Error durante la carga del historial:", err.message);
+			});
 		});
 
 		this.client.on("message", (msg) => {
@@ -72,6 +74,7 @@ class WhatsAppApp {
 		this.readyFired = true;
 
 		if (this.historyStarted) return;
+
 		this.historyStarted = true;
 
 		console.log("Cliente de WhatsApp conectado");
@@ -94,7 +97,7 @@ class WhatsAppApp {
 	handleMessage(msg) {
 		console.log(`Mensaje de ${msg.from}: ${msg.body}`);
 
-		this.messagePipeline.add(msg).catch((err) => {
+		this.messagePipeline.addMessage(msg).catch((err) => {
 			console.error("Error procesando mensaje:", err);
 		});
 	}
