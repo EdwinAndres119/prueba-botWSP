@@ -39,7 +39,14 @@ client.on('disconnected', (reason) => {
     console.log('Cliente desconectado:', reason);
 });
 
+let readyFired = false;
+let historyStarted = false;
+
 client.on('ready', async () => {
+    readyFired = true;
+    if (historyStarted) return;
+    historyStarted = true;
+
     console.log('Cliente de WhatsApp conectado');
 
     // Da tiempo a que WhatsApp Web termine de inicializar sus modulos
@@ -62,6 +69,10 @@ async function initializeWithRetry() {
             await client.initialize();
             return;
         } catch (err) {
+            if (readyFired) {
+                console.log('El cliente ya habia quedado listo antes de este error; no se reintenta.');
+                return;
+            }
             const isContextRace = err.message && err.message.includes('Execution context was destroyed');
             if (!isContextRace || attempt === INIT_MAX_ATTEMPTS) throw err;
             console.log(`Fallo al inicializar (intento ${attempt}/${INIT_MAX_ATTEMPTS}), reintentando...`);

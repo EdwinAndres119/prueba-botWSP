@@ -80,6 +80,11 @@ class HistoryExtractor {
         let saved = 0;
 
         for (const chat of chats) {
+            if (!this.client.pupPage || this.client.pupPage.isClosed()) {
+                console.log('Sesion desconectada, se detiene la extraccion historica.');
+                break;
+            }
+
             try {
                 const chatInfo = { name: chat.name, isGroup: chat.id.endsWith('@g.us') };
                 const messages = await withTimeout(this.fetchMessages(chat.id), config.CHAT_TIMEOUT_MS);
