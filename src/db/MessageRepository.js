@@ -1,10 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
+import { fileURLToPath } from "node:url";
 
 import pino from "pino";
 
-const logsDirectory = path.join(__dirname, "../../logs");
+const logsDirectory = path.join(
+	path.dirname(fileURLToPath(import.meta.url)),
+	"../../logs",
+);
 fs.mkdirSync(logsDirectory, { recursive: true });
 
 const logger = pino(
@@ -104,4 +108,4 @@ class MessageRepository {
 	}
 }
 
-module.exports = MessageRepository;
+export default MessageRepository;

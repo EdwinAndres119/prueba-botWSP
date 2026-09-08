@@ -21,9 +21,4 @@ function buildMessageId(msgId) {
 	return `${msgId.fromMe}_${msgId.remote}_${msgId.id}${participant ? `_${participant}` : ""}`;
 }
 
-module.exports = {
-	cleanNumber,
-	serializeIdPart,
-	sanitizeFilename,
-	buildMessageId,
-};
+export { buildMessageId, cleanNumber, sanitizeFilename, serializeIdPart };

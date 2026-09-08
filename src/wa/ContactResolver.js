@@ -35,4 +35,4 @@ class ContactResolver {
 	}
 }
 
-module.exports = ContactResolver;
+export default ContactResolver;

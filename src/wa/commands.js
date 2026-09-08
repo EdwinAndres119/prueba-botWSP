@@ -19,4 +19,4 @@ async function handleCommand(msg) {
 	}
 }
 
-module.exports = { handleCommand };
+export { handleCommand };

@@ -53,4 +53,4 @@ class MessagePipeline {
 	}
 }
 
-module.exports = MessagePipeline;
+export default MessagePipeline;

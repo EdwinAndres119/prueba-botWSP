@@ -1,7 +1,7 @@
 import qrcode from "qrcode-terminal";
 
 import config from "./src/config.js";
-import DuckLake from "./src/db/ducklake.js";
+import DuckLake from "./src/db/DuckLake.js";
 import MessageRepository from "./src/db/MessageRepository.js";
 import ContactResolver from "./src/wa/ContactResolver.js";
 import createWhatsAppClient from "./src/wa/client.js";

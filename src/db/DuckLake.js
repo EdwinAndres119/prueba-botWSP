@@ -1,3 +1,5 @@
+import { DuckDBInstance } from "@duckdb/node-api";
+
 class DuckLake {
 	constructor() {
 		this.connection = this.initializeDatabase();
@@ -20,7 +22,7 @@ class DuckLake {
 			`
             INSTALL ducklake;
             LOAD ducklake;
-        `,
+            `,
 		);
 
 		await this.dbRun(
@@ -31,7 +33,7 @@ class DuckLake {
             AS whatsapp
                 (DATA_PATH './whatsapp-data/');
             USE whatsapp;
-        `,
+            `,
 		);
 
 		await this.dbRun(
@@ -54,13 +56,11 @@ class DuckLake {
                 media_path VARCHAR,
                 timestamp TIMESTAMP
             );
-        `,
+            `,
 		);
 	}
 
 	async createDuckDbConnection() {
-		const { DuckDBInstance } = await import("@duckdb/node-api");
-
 		const instance = await DuckDBInstance.create(":memory:");
 
 		return instance.connect();
@@ -74,8 +74,9 @@ class DuckLake {
 	async checkpoint() {
 		const db = await this.connection;
 		await db.run(`
-            CHECKPOINT;`);
+            CHECKPOINT;
+        `);
 	}
 }
 
-module.exports = DuckLake;
+export default DuckLake;

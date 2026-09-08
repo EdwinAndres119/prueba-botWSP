@@ -1,6 +1,8 @@
-import { Message } from "whatsapp-web.js";
+import whatsappWeb from "whatsapp-web.js";
 
 import config from "../config.js";
+
+const { Message } = whatsappWeb;
 
 const MIN_DELAY_MS = 1500;
 const DELAY_JITTER_MS = 1500;
@@ -131,4 +133,4 @@ class HistoryExtractor {
 	}
 }
 
-module.exports = HistoryExtractor;
+export default HistoryExtractor;

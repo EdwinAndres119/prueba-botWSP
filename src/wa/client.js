@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { Client, LocalAuth } from "whatsapp-web.js";
+import whatsappWeb from "whatsapp-web.js";
+
+const { Client, LocalAuth } = whatsappWeb;
 
 // Real desktop Chrome user-agent so WhatsApp does not see an inconsistent
 // browser fingerprint (Puppeteer's default is a common automation signal).
@@ -31,4 +33,4 @@ function createWhatsAppClient() {
 	});
 }
 
-module.exports = createWhatsAppClient;
+export default createWhatsAppClient;

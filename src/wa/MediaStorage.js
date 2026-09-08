@@ -60,4 +60,4 @@ class MediaStorage {
 	}
 }
 
-module.exports = MediaStorage;
+export default MediaStorage;
