@@ -1,3 +1,5 @@
+import PQueue from "p-queue";
+
 import { buildMessageId, cleanNumber } from "./identifiers.js";
 
 class MessagePipeline {
@@ -5,6 +7,18 @@ class MessagePipeline {
 		this.contactResolver = contactResolver;
 		this.mediaStorage = mediaStorage;
 		this.messageRepository = messageRepository;
+
+		this.queue = new PQueue({
+			concurrency: 1,
+		});
+	}
+
+	add(msg, chatInfo) {
+		return this.queue.add(() => this.process(msg, chatInfo));
+	}
+
+	async onIdle() {
+		await this.queue.onIdle();
 	}
 
 	async process(msg, chatInfo) {

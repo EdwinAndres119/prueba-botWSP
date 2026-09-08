@@ -1,6 +1,6 @@
 import { DuckDBInstance } from "@duckdb/node-api";
 
-class DuckLake {
+class DuckLakeClient {
 	constructor() {
 		this.connection = this.initializeDatabase();
 	}
@@ -79,4 +79,4 @@ class DuckLake {
 	}
 }
 
-export default DuckLake;
+export default DuckLakeClient;

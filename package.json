@@ -9,7 +9,7 @@
 		"start": "node app.js",
 		"build": "pkg . --targets node22-win-x64 --output dist/BotWSP.exe",
 		"lint": "biome lint --write src app.js",
-    "format": "biome format --write src app.js"
+		"format": "biome format --write src app.js"
 	},
 	"keywords": [],
 	"author": "",
@@ -22,6 +22,7 @@
 	"dependencies": {
 		"@duckdb/node-api": "1.5.5-r.4",
 		"dotenv": "^17.2.3",
+		"p-queue": "^9.3.3",
 		"pino": "^10.3.1",
 		"pm2": "^6.0.14",
 		"qrcode-terminal": "^0.12.0",
