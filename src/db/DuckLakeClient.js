@@ -22,6 +22,8 @@ class DuckLakeClient {
 			`
             INSTALL ducklake;
             LOAD ducklake;
+			INSTALL excel;
+			LOAD excel;
             `,
 		);
 
@@ -76,6 +78,17 @@ class DuckLakeClient {
 		await db.run(`
             CHECKPOINT;
         `);
+		await db.run(`
+			COPY (
+				SELECT *
+				FROM read_parquet('./whatsapp-data/**/*.parquet')
+			)
+			TO './whatsapp-data/mensajes.xlsx'
+			(
+				FORMAT XLSX,
+				HEADER true
+			);
+		`);
 	}
 }
 
