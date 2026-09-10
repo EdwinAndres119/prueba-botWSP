@@ -7,18 +7,16 @@
 	"bin": "app.js",
 	"scripts": {
 		"start": "node app.js",
-		"build": "pkg . --targets node22-win-x64 --output dist/BotWSP.exe",
+		"build:bundle": "node scripts/build-bundle.js",
+		"build:assets": "node scripts/copy-assets.js",
+		"build:exe": "node scripts/build-exe.js",
+		"build": "npm run build:bundle && npm run build:assets && npm run build:exe",
 		"lint": "biome lint --write src app.js",
 		"format": "biome format --write src app.js"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"pkg": {
-		"assets": [
-			"node_modules/whatsapp-web.js/src/util/Injected/**/*"
-		]
-	},
 	"dependencies": {
 		"@duckdb/node-api": "1.5.5-r.4",
 		"dotenv": "^17.2.3",
@@ -31,6 +29,11 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.5.12",
 		"@yao-pkg/pkg": "^6.22.0",
-		"esbuild": "^0.28.2"
+		"esbuild": "^0.28.2",
+		"postject": "^1.0.0-alpha.6"
+	},
+	"allowScripts": {
+		"esbuild@0.28.2": true,
+		"puppeteer@24.38.0": true
 	}
 }

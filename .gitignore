@@ -1,5 +1,13 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
+# Build artifacts
+ejecutable/
+ejecutable.zip
+*.blob
+sea-config.json
+
+# WhatsApp session data
+whatsapp-data/
 
 whatsapp.ducklake
 whatsapp.ducklake.wal

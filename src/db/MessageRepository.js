@@ -1,11 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const logsDirectory = path.join(
-	path.dirname(fileURLToPath(import.meta.url)),
-	"../../logs",
-);
+import getRuntimeDir from "../runtimeDir.js";
+
+const logsDirectory = path.join(getRuntimeDir(), "logs");
 fs.mkdirSync(logsDirectory, { recursive: true });
 
 class MessageRepository {

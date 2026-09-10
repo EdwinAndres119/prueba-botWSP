@@ -11,7 +11,8 @@ const USER_AGENT =
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
 function resolveChromePath() {
-	if (!process.pkg) return undefined;
+	// process.sea existe cuando el proceso es un Node SEA (.exe)
+	if (!process.sea) return undefined;
 
 	const bundledPath = path.join(
 		path.dirname(process.execPath),
