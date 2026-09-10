@@ -1,14 +1,17 @@
-const path = require('path');
-require('dotenv').config();
+import path from "node:path";
 
-const HISTORY_LIMIT = parseInt(process.env.HISTORY_LIMIT || '50', 10);
-const MEDIA_DIR = path.join(__dirname, '..', 'media');
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY;
+import "dotenv/config";
 
-module.exports = {
-    HISTORY_LIMIT,
-    MEDIA_DIR,
-    SUPABASE_URL,
-    SUPABASE_KEY,
+import getRuntimeDir from "./runtimeDir.js";
+
+const PROJECT_ROOT = getRuntimeDir();
+const HISTORY_LIMIT = parseInt(process.env.HISTORY_LIMIT || "0", 10);
+const CHAT_TIMEOUT_MS = parseInt(process.env.CHAT_TIMEOUT_MS || "300000", 10);
+const MEDIA_DIR = path.join(PROJECT_ROOT, "media");
+
+export default {
+	PROJECT_ROOT,
+	HISTORY_LIMIT,
+	CHAT_TIMEOUT_MS,
+	MEDIA_DIR,
 };

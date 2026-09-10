@@ -1,58 +1,42 @@
-const qrcode = require('qrcode-terminal');
-
-const config = require('./src/config');
-const supabase = require('./src/db/SupabaseClient');
-const MessageRepository = require('./src/db/MessageRepository');
-const ContactResolver = require('./src/wa/ContactResolver');
-const MediaStorage = require('./src/wa/MediaStorage');
-const MessagePipeline = require('./src/wa/MessagePipeline');
-const HistoryExtractor = require('./src/wa/HistoryExtractor');
-const createWhatsAppClient = require('./src/wa/client');
-const { handleCommand } = require('./src/wa/commands');
+import config from "./src/config.js";
+import DuckLakeClient from "./src/db/DuckLakeClient.js";
+import MessageRepository from "./src/db/MessageRepository.js";
+import ContactResolver from "./src/wa/ContactResolver.js";
+import createWhatsAppClient from "./src/wa/client.js";
+import { handleCommand } from "./src/wa/commands.js";
+import HistoryExtractor from "./src/wa/HistoryExtractor.js";
+import MediaStorage from "./src/wa/MediaStorage.js";
+import MessagePipeline from "./src/wa/MessagePipeline.js";
+import WhatsAppApp from "./src/wa/WhatsAppApp.js";
 
 const READY_DELAY_MS = 5000;
+const INIT_MAX_ATTEMPTS = 3;
+const INIT_RETRY_DELAY_MS = 3000;
 
 const client = createWhatsAppClient();
+const ducklakeConection = new DuckLakeClient();
 
-const messageRepository = new MessageRepository(supabase);
+const messageRepository = new MessageRepository(ducklakeConection);
 const contactResolver = new ContactResolver(client);
 const mediaStorage = new MediaStorage(config.MEDIA_DIR);
-const messagePipeline = new MessagePipeline({ contactResolver, mediaStorage, messageRepository });
+
+const messagePipeline = new MessagePipeline({
+	contactResolver,
+	mediaStorage,
+	messageRepository,
+	commandHandler: handleCommand,
+});
+
 const historyExtractor = new HistoryExtractor(client, config.HISTORY_LIMIT);
 
-client.on('qr', (qr) => {
-    console.log('Escanea el codigo QR con tu WhatsApp:');
-    qrcode.generate(qr, { small: true });
+const whatsappApp = new WhatsAppApp({
+	client,
+	ducklake: ducklakeConection,
+	messagePipeline,
+	historyExtractor,
+	readyDelay: READY_DELAY_MS,
+	initMaxAttempts: INIT_MAX_ATTEMPTS,
+	initRetryDelay: INIT_RETRY_DELAY_MS,
 });
 
-client.on('authenticated', () => {
-    console.log('Autenticacion exitosa');
-});
-
-client.on('auth_failure', (msg) => {
-    console.error('Error de autenticacion:', msg);
-});
-
-client.on('disconnected', (reason) => {
-    console.log('Cliente desconectado:', reason);
-});
-
-client.on('ready', async () => {
-    console.log('Cliente de WhatsApp conectado');
-
-    // Da tiempo a que WhatsApp Web termine de inicializar sus modulos
-    // internos antes de leer el historial de chats.
-    await new Promise((resolve) => setTimeout(resolve, READY_DELAY_MS));
-
-    await historyExtractor.run((msg, chatInfo) => messagePipeline.process(msg, chatInfo));
-});
-
-client.on('message', async (msg) => {
-    console.log(`Mensaje de ${msg.from}: ${msg.body}`);
-
-    await messagePipeline.process(msg);
-    await handleCommand(msg);
-});
-
-console.log('Iniciando cliente de WhatsApp...');
-client.initialize();
+whatsappApp.start();
