@@ -29,7 +29,7 @@ class ContactResolver {
 				return cleanNumber(result.pn);
 			}
 		} catch (_err) {
-			// Keep the lid-based number if resolution fails.
+			// Si la resolucion falla, se mantiene el numero basado en el lid.
 		}
 		return fallbackNumber;
 	}

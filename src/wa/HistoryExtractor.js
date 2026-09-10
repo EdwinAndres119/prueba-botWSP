@@ -9,6 +9,14 @@ const DELAY_JITTER_MS = 1500;
 const PAGE_DELAY_MS = 600;
 const PROGRESS_INTERVAL = 10;
 
+// Puppeteer/Chrome can die mid-run (crash, WhatsApp Web reloading the page,
+// the account getting logged out elsewhere). pupPage.isClosed() does not
+// catch this: the Page object can still report "open" while the frame inside
+// it is gone. Without this check, every remaining chat fails instantly and
+// the loop burns through the rest of the list saving nothing instead of
+// stopping cleanly.
+const FATAL_BROWSER_ERROR = /Target closed|detached Frame|Session closed/i;
+
 function withTimeout(promise, ms) {
 	return Promise.race([
 		promise,
@@ -46,7 +54,11 @@ class HistoryExtractor {
 	// Mirrors Chat.fetchMessages() internally, but fetches the chat with
 	// getAsModel: false to avoid the same serialization failure as listChats().
 	// limit <= 0 means no cap: keep paging into history until WhatsApp
-	// reports there are no earlier messages left to load.
+	// reports there are no earlier messages left in the already-synced local
+	// window. Going further back than that window requires the phone
+	// (on-demand history sync) -- tried and confirmed to hit a real WhatsApp
+	// limit for this account, not a code bug; not pursued further (see
+	// docs/arquitectura.md).
 	async fetchMessages(chatId) {
 		const limit = this.historyLimit;
 		const rawMessages = await this.client.pupPage.evaluate(
@@ -115,6 +127,14 @@ class HistoryExtractor {
 					`Error al extraer "${chat.name || chat.id}":`,
 					err.message,
 				);
+
+				if (FATAL_BROWSER_ERROR.test(err.message)) {
+					console.error(
+						"El navegador se cerro o se desconecto a mitad de la extraccion; " +
+							"se detiene en vez de seguir fallando en cada chat restante.",
+					);
+					break;
+				}
 			}
 
 			await randomDelay();

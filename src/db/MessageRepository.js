@@ -9,9 +9,50 @@ fs.mkdirSync(logsDirectory, { recursive: true });
 class MessageRepository {
 	constructor(db) {
 		this.db = db;
+		this.knownIds = null;
+		this.skipped = 0;
+	}
+
+	/**
+	 * Carga en memoria los ids ya guardados, para poder re-correr la extraccion
+	 * sin duplicar filas. Ademas cubre los duplicados *dentro* de una misma
+	 * corrida: el on-demand history sync entrega bloques que se solapan.
+	 *
+	 * Una sola query al arrancar; las inserciones ya son secuenciales (PQueue
+	 * con concurrencia 1 en MessagePipeline), asi que el Set es autoritativo.
+	 */
+	async loadKnownIds() {
+		if (this.knownIds) return this.knownIds;
+
+		this.knownIds = new Set();
+
+		try {
+			const result = await this.db.run("SELECT id FROM whatsapp.mensajes");
+			const rows = await result.getRowObjects();
+			for (const row of rows) {
+				if (row.id) this.knownIds.add(String(row.id));
+			}
+		} catch (err) {
+			// Primera corrida: la tabla puede no tener datos todavia.
+			console.warn("No se pudieron precargar los ids existentes:", err.message);
+		}
+
+		if (this.knownIds.size) {
+			console.log(`${this.knownIds.size} mensajes ya guardados previamente.`);
+		}
+
+		return this.knownIds;
 	}
 
 	async save(row) {
+		const known = await this.loadKnownIds();
+
+		if (known.has(row.id)) {
+			this.skipped++;
+			return false;
+		}
+		known.add(row.id);
+
 		await this.db.run(
 			`
                 INSERT INTO whatsapp.mensajes (
@@ -67,6 +108,8 @@ class MessageRepository {
 				timestamp: row.timestamp,
 			},
 		);
+
+		return true;
 	}
 }
 

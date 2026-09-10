@@ -12,10 +12,12 @@ BOT_WSP/
 ├── app.js                      # entry point: wiring de servicios y eventos
 ├── src/
 │   ├── config.js                # variables de entorno y constantes
+│   ├── runtimeDir.js            # raiz de datos en runtime (node vs .exe)
 │   ├── db/
-│   │   ├── DuckLake.js          # conexion e inicializacion de la base DuckLake
-│   │   └── MessageRepository.js # guarda filas en la tabla mensajes
+│   │   ├── DuckLakeClient.js    # conexion e inicializacion de la base DuckLake
+│   │   └── MessageRepository.js # guarda filas en la tabla mensajes (idempotente)
 │   └── wa/
+│       ├── WhatsAppApp.js       # ciclo de vida del cliente y sus eventos
 │       ├── client.js            # crea el Client de whatsapp-web.js
 │       ├── identifiers.js       # limpieza y armado de ids
 │       ├── ContactResolver.js   # numero real, nombre, si esta registrado
@@ -23,6 +25,7 @@ BOT_WSP/
 │       ├── MessagePipeline.js   # arma y guarda una fila a partir de un mensaje
 │       ├── HistoryExtractor.js  # recorre todos los chats y trae su historial
 │       └── commands.js          # comandos de texto (!ping, !hola, !info)
+├── scripts/                     # build del ejecutable
 ├── media/                       # archivos descargados, por fecha (no versionado)
 └── docs/
     └── arquitectura.md
@@ -61,7 +64,11 @@ WhatsApp introdujo un sistema de identificadores privados (`@lid`) que rompe var
 5. Un chat puede quedar colgado al pedir sus mensajes (por ejemplo canales). `HistoryExtractor` usa un timeout por chat (`config.CHAT_TIMEOUT_MS`, default 5 minutos) para no bloquear el resto.
 6. El navegador debe ser el Chromium propio que Puppeteer descarga con `npm install` — usar Chrome o Edge del sistema puede causar errores de protocolo por diferencias de version.
 7. Los numeros con sufijo `@lid` no son el numero de telefono real. `ContactResolver` los resuelve via `client.getContactLidAndPhone()`.
-8. **`HISTORY_LIMIT` controla cuanto historial se trae por chat, y `0` significa "todo el historial disponible".** Editado en `src/wa/HistoryExtractor.js`, metodo `fetchMessages()`: originalmente, si `HISTORY_LIMIT` era `0` (o no estaba seteado) el codigo directamente **no** pedia mensajes anteriores — solo devolvia los que WhatsApp Web ya tenia en cache (tipicamente los ultimos 20-50), así que en la practica solo se extraia lo mas reciente sin importar cuantos anios de historial tuviera el chat. Se cambio la condicion del ciclo de `if (limit > 0) { while (msgs.length < limit) { ... } }` a `while (limit <= 0 || msgs.length < limit) { ... }`, de forma que con `limit <= 0` el ciclo sigue llamando a `WAWebChatLoadMessages.loadEarlierMsgs({ chat })` (la misma funcion interna que usa "cargar mensajes anteriores" en WhatsApp Web) hasta que esta devuelve vacio, es decir, hasta que ya no hay mas historial para ese chat. Con un `limit > 0` sigue funcionando igual que antes (tope fijo de mensajes mas recientes por chat). Configuracion en `.env` via `HISTORY_LIMIT` (ver `.env.example`).
+8. **El muro de los ~6 meses no es del bot: es la ventana de sincronizacion de WhatsApp.** Al vincular un dispositivo, el telefono sincroniza hacia el cliente web solo una ventana acotada de historial (unos meses, o un tope por chat). `WAWebChatLoadMessages.loadEarlierMsgs()` pagina **unicamente ese almacen local ya sincronizado**: cuando lo agota devuelve vacio, y ahi termina la extraccion. Por eso `HISTORY_LIMIT=0` trae todo lo *disponible en el navegador*, que no es todo lo que existe en el telefono. Los chats donde si aparecen mensajes muy viejos son chats de poco trafico, cuyo historial completo entra dentro de esa ventana.
+
+   Se investigo pasar ese muro usando el *on-demand history sync* de WhatsApp (el boton "Click here to get older messages from your phone" en la UI, que le pide al telefono un bloque mas viejo). Se implemento contra la cuenta real, controlando el boton por Puppeteer, y funciono: trajo mensajes bastante mas atras de lo que habia antes. Pero al aflojar todos los limites propios (mas reintentos, mas tiempo de espera) llego exactamente al mismo punto y se detuvo igual — confirmando que ese punto **es un limite real del lado de WhatsApp para esta cuenta/chat**, no un bug del codigo. Se descarto seguir por esa via: el mecanismo requeria automatizar la UI real (abrir cada chat, buscarlo, hacer scroll) en vez de trabajar solo contra los datos internos como el resto del extractor, lo cual es mas lento, mas fragil a largo plazo, y mas riesgoso de cara a deteccion de automatizacion sobre cientos de chats. El extractor se mantiene simple: trae todo lo que la ventana de sincronizacion ya tiene disponible, sin tocar la UI.
+
+9. **`HISTORY_LIMIT` controla cuanto historial se trae por chat, y `0` significa "todo el historial disponible" (dentro de la ventana ya sincronizada).** Editado en `src/wa/HistoryExtractor.js`, metodo `fetchMessages()`: originalmente, si `HISTORY_LIMIT` era `0` (o no estaba seteado) el codigo directamente **no** pedia mensajes anteriores — solo devolvia los que WhatsApp Web ya tenia en cache (tipicamente los ultimos 20-50), así que en la practica solo se extraia lo mas reciente sin importar cuantos anios de historial tuviera el chat. Se cambio la condicion del ciclo de `if (limit > 0) { while (msgs.length < limit) { ... } }` a `while (limit <= 0 || msgs.length < limit) { ... }`, de forma que con `limit <= 0` el ciclo sigue llamando a `WAWebChatLoadMessages.loadEarlierMsgs({ chat })` (la misma funcion interna que usa "cargar mensajes anteriores" en WhatsApp Web) hasta que esta devuelve vacio, es decir, hasta que ya no hay mas historial para ese chat. Con un `limit > 0` sigue funcionando igual que antes (tope fijo de mensajes mas recientes por chat). Configuracion en `.env` via `HISTORY_LIMIT` (ver `.env.example`).
 
 ## Multimedia
 

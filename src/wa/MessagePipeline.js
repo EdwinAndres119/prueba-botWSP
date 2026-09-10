@@ -2,6 +2,10 @@ import PQueue from "p-queue";
 
 import { buildMessageId, cleanNumber } from "./identifiers.js";
 
+// "Estados" (WhatsApp Status/Stories) arrive as regular messages from
+// status@broadcast. No son un chat real, asi que no se guardan.
+const STATUS_BROADCAST_ID = "status@broadcast";
+
 class MessagePipeline {
 	constructor({
 		contactResolver,
@@ -37,6 +41,10 @@ class MessagePipeline {
 	async process(msg, chatInfo) {
 		if (!msg.id?.id) {
 			return; // internal WhatsApp notification without a real message id
+		}
+
+		if (msg.from === STATUS_BROADCAST_ID) {
+			return; // Estado/Historia, no un chat real
 		}
 
 		const messageId = buildMessageId(msg.id);
