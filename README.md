@@ -32,11 +32,14 @@ npm install
 
 No hace falta ninguna cuenta externa: DuckLake crea la base de datos localmente al iniciar el bot (`whatsapp.ducklake`, con los datos en `whatsapp-data/`), incluyendo la tabla `mensajes` si no existe todavía. Ver el detalle del esquema en `docs/arquitectura.md`.
 
-Copiar `.env.example` a `.env` y completar:
+Opcional — copiar `.env.example` a `.env` si se quiere ajustar algo; si no existe, el bot usa estos mismos valores por defecto:
 
 ```
-HISTORY_LIMIT=50
+HISTORY_LIMIT=0
+CHAT_TIMEOUT_MS=300000
 ```
+
+`HISTORY_LIMIT=0` trae todo el historial disponible por chat (dentro de la ventana ya sincronizada por WhatsApp, ver `docs/arquitectura.md`). Un valor mayor a 0 limita a esa cantidad de mensajes más recientes por chat.
 
 ## Ejecución
 
@@ -45,7 +48,7 @@ node app.js
 ```
 
 **Flujo al iniciar:**
-1. Se abre el navegador (modo visible) con WhatsApp Web.
+1. Se abre WhatsApp Web en un navegador en segundo plano (headless, sin ventana visible).
 2. Se muestra un código QR en la terminal (solo la primera vez; después queda la sesión guardada).
 3. Escanear el QR con la app de WhatsApp en el teléfono (Dispositivos vinculados).
 4. El bot recorre todos los chats existentes y guarda su historial de mensajes en DuckLake (muestra el progreso cada 10 chats).
